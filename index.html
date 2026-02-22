@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>SABUU QR Generator</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI,sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:#fff;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+    padding:20px;
+}
+
+/* Header */
+.brand{
+    text-align:center;
+    margin-bottom:25px;
+}
+.brand img{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid #00ffcc;
+    box-shadow:0 0 20px rgba(0,255,200,.5);
+}
+.brand h1{
+    font-size:48px;
+    font-weight:900;
+    letter-spacing:6px;
+    margin:15px 0 0;
+    background:linear-gradient(90deg,#00eaff,#00ff9d,#a855f7);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* Card */
+.card{
+    background:rgba(255,255,255,0.12);
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+input,button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    margin-top:10px;
+}
+button{
+    background:linear-gradient(45deg,#00eaff,#00ff9d);
+    font-weight:bold;
+    cursor:pointer;
+}
+button:hover{opacity:.85}
+
+/* Preview */
+.preview{
+    text-align:center;
+    margin-top:15px;
+}
+.preview img{
+    max-width:250px;
+    border-radius:10px;
+    border:2px solid #00ffcc;
+}
+
+/* History */
+.history{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+    gap:10px;
+    margin-top:10px;
+}
+.history img{
+    width:100%;
+    border-radius:10px;
+    cursor:pointer;
+}
+small{opacity:.7}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- BRAND -->
+<div class="brand">
+    <img src="sabuu.jpg" alt="SABUU">
+    <h1>SABUU</h1>
+</div>
+
+<!-- QR GENERATOR -->
+<div class="card">
+    <h2>📷 Image Upload (Preview Only)</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <input type="text" id="qrText" placeholder="QR এর ভিতরে যেটা যাবে (text / id / name)">
+    <button onclick="generateQR()">Generate QR Code</button>
+
+    <div class="preview" id="previewBox" style="display:none">
+        <h3>QR Preview</h3>
+        <img id="qrImage"><br><br>
+        <a id="downloadBtn" download="sabuu-qr.png">
+            <button>⬇ Download QR</button>
+        </a>
+    </div>
+</div>
+
+<!-- HISTORY -->
+<div class="card">
+    <h3>🕘 QR History</h3>
+    <small>Click any QR to preview again</small>
+    <div class="history" id="historyBox"></div>
+</div>
+
+</div>
+
+<script>
+const HISTORY_KEY="sabuu_qr_history";
+
+function generateQR(){
+    const text=document.getElementById("qrText").value.trim();
+    if(!text){
+        alert("QR এর জন্য কিছু লিখো");
+        return;
+    }
+
+    const qrUrl=
+    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="
+    +encodeURIComponent(text);
+
+    qrImage.src=qrUrl;
+    downloadBtn.href=qrUrl;
+    previewBox.style.display="block";
+
+    saveHistory(qrUrl);
+    loadHistory();
+}
+
+function saveHistory(qr){
+    let h=JSON.parse(localStorage.getItem(HISTORY_KEY))||[];
+    h.unshift(qr);
+    localStorage.setItem(HISTORY_KEY,JSON.stringify(h.slice(0,20)));
+}
+
+function loadHistory(){
+    historyBox.innerHTML="";
+    let h=JSON.parse(localStorage.getItem(HISTORY_KEY))||[];
+    h.forEach(q=>{
+        const img=document.createElement("img");
+        img.src=q;
+        img.onclick=()=>{
+            qrImage.src=q;
+            downloadBtn.href=q;
+            previewBox.style.display="block";
+        };
+        historyBox.appendChild(img);
+    });
+}
+loadHistory();
+</script>
+
+</body>
+</html>
